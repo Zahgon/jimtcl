@@ -101,36 +101,54 @@ distribution that will run both under Jim and Tcl, so just execute
 it with both the interpreters and see what you get :)
 
 --------------------------------------------------------------------------------
-HOW TO COMPILE
+HOW TO BUILD
 --------------------------------------------------------------------------------
 
-Jim was tested under Linux, FreeBSD, MacosX, eCos, QNX, Windows XP (mingw, MVC).
+Jim Tcl is written in Go and needs Go 1.23 or later. Nothing else: the
+implementation uses only the standard library, and there is no C compiler, no
+configure script and no generated header in the build.
 
-To compile Jim itself try:
+To build the jimsh interpreter:
 
-  ./configure
+  go build -o jimsh .
+
+or, with the convenience Makefile:
+
   make
+
+To run the test suite (Go tests, including the Tcl test suite in tests/):
+
+  go test ./...
+  make test
 
 --------------------------------------------------------------------------------
 EXTENSIONS
 --------------------------------------------------------------------------------
 
-Many optional extensions are included. Some are C extensions and others are pure Tcl.
-Form more information, try:
+The commands of this build are the interpreter core, aio (files and the standard
+channels), array, clock, file, namespace, regexp, package and the Tcl-implemented
+stdlib, tclcompat and nshelper, which are embedded from the .tcl files in this
+directory. Extensions that need the operating system's process, socket, event or
+signal facilities (exec, socket, the event loop, signals, child interpreters) are
+not part of this implementation.
 
-  ./configure --help
+The interpreter itself lives in the internal/jim package and the regular
+expression engine in internal/jimregex; main.go is the jimsh command.
 
 --------------------------------------------------------------------------------
 HOW TO EMBED JIM INTO APPLICATIONS
 --------------------------------------------------------------------------------
 
-See the "examples.api" directory
+Import github.com/msteveb/jimtcl/internal/jim, create an interpreter with
+jim.NewInterp() and register your own commands with Interp.RegisterCmd(). The
+"examples.api" directory shows the equivalent C API of earlier releases.
 
 --------------------------------------------------------------------------------
 HOW TO WRITE EXTENSIONS FOR JIM
 --------------------------------------------------------------------------------
 
-See the extensions shipped with Jim, jim-readline.c, jim-clock.c, glob.tcl and oo.tcl
+Extensions are Go files that register commands with Interp.RegisterCmd() or
+Interp.RegisterSubCmd(), or pure Tcl files such as glob.tcl and oo.tcl.
 
 --------------------------------------------------------------------------------
 COPYRIGHT and LICENSE
